@@ -33,7 +33,7 @@ export default function SessionAuthenticateModal() {
   const [showPinModal, setShowPinModal] = useState(false);
   // satochip
   const card = useRef(new SatochipCard()).current;
-  const { withModal, nfcVisible, closeNfc } = useSatochipModal(card);
+  const { withModal, nfcVisible, nfcMessage, closeNfc } = useSatochipModal(card);
 
   const authRequest =
     data?.authRequest as SignClientTypes.EventArguments['session_authenticate'];
@@ -257,7 +257,7 @@ export default function SessionAuthenticateModal() {
         maxLength={16}
       />
 
-      <NfcPrompt visible={nfcVisible} close={closeNfc} />
+      <NfcPrompt visible={nfcVisible} message={nfcMessage} close={closeNfc} />
 
     </>
   );

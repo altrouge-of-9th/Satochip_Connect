@@ -39,7 +39,7 @@ export default function SessionSendTransactionModal() {
 
   // satochip
   const card = useRef(new SatochipCard()).current;
-  const { withModal, nfcVisible, closeNfc } = useSatochipModal(card);
+  const { withModal, nfcVisible, nfcMessage, closeNfc } = useSatochipModal(card);
 
   // Get request and wallet data from store
   const requestEvent = data?.requestEvent;
@@ -173,7 +173,7 @@ export default function SessionSendTransactionModal() {
         type={walletType===WalletType.SATOCHIP? "PIN" : "password"}
       />
 
-      <NfcPrompt visible={nfcVisible} close={closeNfc} />
+      <NfcPrompt visible={nfcVisible} message={nfcMessage} close={closeNfc} />
 
     </>
   );

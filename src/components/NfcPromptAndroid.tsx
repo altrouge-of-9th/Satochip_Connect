@@ -10,10 +10,12 @@ function NfcPrompt({
                      visible = true,
                      close,
                      ctaText,
+                     message,
                    }: {
   visible: boolean;
   close: () => void;
   ctaText?: string;
+  message?: string;
 }) {
 
   const { isDarkMode, colors } = useTheme();
@@ -78,7 +80,7 @@ function NfcPrompt({
           <View style={[styles.center, { backgroundColor }]}>
             <NFCSVG />
             <Text style={{ textAlign: 'center', color: textColor }}>
-              {"Please hold until the scanning is complete..."}
+              {message || "Please hold until the scanning is complete..."}
             </Text>
             <Pressable style={styles.cancel} onPress={onCancel}>
               <Text style={{ textAlign: 'center', color: textColor }}>

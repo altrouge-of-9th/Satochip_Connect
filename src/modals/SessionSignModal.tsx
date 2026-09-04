@@ -43,7 +43,7 @@ export default function SessionSignModal() {
   const [showPinModal, setShowPinModal] = useState(false);
   // satochip
   const card = useRef(new SatochipCard()).current;
-  const { withModal, nfcVisible, closeNfc } = useSatochipModal(card);
+  const { withModal, nfcVisible, nfcMessage, closeNfc } = useSatochipModal(card);
 
   // Get required request data
   const { topic, params } = requestEvent!;
@@ -194,7 +194,7 @@ export default function SessionSignModal() {
         type={walletType===WalletType.SATOCHIP? "PIN" : "password"}
       />
 
-      <NfcPrompt visible={nfcVisible} close={closeNfc} />
+      <NfcPrompt visible={nfcVisible} message={nfcMessage} close={closeNfc} />
     </>
   );
 }
