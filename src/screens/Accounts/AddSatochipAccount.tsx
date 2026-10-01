@@ -35,7 +35,7 @@ export default function AddSatochipAccountScreen({ navigation }: Props) {
   const [satochipStatusCode, setSatochipStatusCode] = useState("");
 
   const card = useRef(new SatochipCard()).current;
-  const { withModal, nfcVisible, closeNfc } = useSatochipModal(card);
+  const { withModal, nfcVisible, nfcMessage, closeNfc } = useSatochipModal(card);
 
   const handleScanCard = useCallback(async () => {
     try {
@@ -77,7 +77,7 @@ export default function AddSatochipAccountScreen({ navigation }: Props) {
       contentContainerStyle={addAccountStyles.content}
       contentInsetAdjustmentBehavior="automatic">
 
-      <NfcPrompt visible={nfcVisible} close={closeNfc} />
+      <NfcPrompt visible={nfcVisible} message={nfcMessage} close={closeNfc} />
 
       <View style={addAccountStyles.header}>
         <Text style={[addAccountStyles.title, { color: Theme['fg-100'] }]}>

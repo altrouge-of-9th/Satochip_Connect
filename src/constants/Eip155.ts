@@ -17,6 +17,8 @@ import Zora from '@/assets/chains/zora.webp';
 import Celo from '@/assets/chains/celo.webp';
 import Base from '@/assets/chains/base.webp';
 import Aurora from '@/assets/chains/aurora.webp';
+import Mizuhiki from '@/assets/chains/mizuhiki.webp';
+import Kaia from '@/assets/chains/kaia.webp';
 import Unknown from '@/assets/chains/unknown.png';
 import { Chain } from '@/utils/TypesUtil';
 import { ImageSourcePropType } from 'react-native';
@@ -201,6 +203,34 @@ export const EIP155_CHAINS: Record<string, Chain> = {
     symbol: 'ETH',
     rpcUrl: 'https://mainnet.aurora.dev',
   },
+  'eip155:6498': {
+    chainId: '6498',
+    namespace: 'eip155',
+    name: 'MIZUHIKI Mainnet',
+    symbol: 'MIZU',
+    rpcUrl: 'https://rpc.mizuhiki.io',
+  },
+  'eip155:6497': {
+    chainId: '6497',
+    namespace: 'eip155',
+    name: 'MIZUHIKI Testnet Awaji',
+    symbol: 'MIZU',
+    rpcUrl: 'https://rpc.awaji.mizuhiki.io',
+  },
+  'eip155:8217': {
+    chainId: '8217',
+    namespace: 'eip155',
+    name: 'Kaia Mainnet',
+    symbol: 'KAIA',
+    rpcUrl: 'https://public-en.node.kaia.io',
+  },
+  'eip155:1001': {
+    chainId: '1001',
+    namespace: 'eip155',
+    name: 'Kaia Kairos Testnet',
+    symbol: 'KAIA',
+    rpcUrl: 'https://public-en-kairos.node.kaia.io',
+  },
 };
 
 export const EIP155_NETWORK_IMAGES: Record<string, ImageSourcePropType> = {
@@ -229,6 +259,10 @@ export const EIP155_NETWORK_IMAGES: Record<string, ImageSourcePropType> = {
   'eip155:42220': Celo,
   'eip155:8453': Base,
   'eip155:1313161554': Aurora,
+  'eip155:6498': Mizuhiki,
+  'eip155:6497': Mizuhiki,
+  'eip155:8217': Kaia,
+  'eip155:1001': Kaia,
 };
 
 export const EIP155_SIGNING_METHODS = {
@@ -439,5 +473,30 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
     // No Alchemy support
     'https://api.harmony.one',
     'https://1rpc.io/one',
+  ],
+
+  // MIZUHIKI Mainnet
+  6498: [
+    // No Alchemy support
+    'https://rpc.mizuhiki.io',
+  ],
+
+  // MIZUHIKI Testnet Awaji
+  6497: [
+    // No Alchemy support
+    'https://rpc.awaji.mizuhiki.io',
+  ],
+
+  // KAIA Mainnet
+  8217: [
+    // No Alchemy support
+    'https://public-en.node.kaia.io',
+    'https://1rpc.io/klay',
+  ],
+
+  // KAIA Kairos Testnet
+  1001: [
+    // No Alchemy support
+    'https://public-en-kairos.node.kaia.io',
   ],
 };

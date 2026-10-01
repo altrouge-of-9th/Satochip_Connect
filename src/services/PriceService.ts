@@ -42,6 +42,7 @@ const CHAIN_TO_COINGECKO_ID: Record<number, string> = {
   1285: 'moonriver', // Moonriver
   42220: 'celo', // Celo
   1666600000: 'harmony', // Harmony
+  8217: 'kaia', // Kaia
 };
 
 interface PriceCache {
