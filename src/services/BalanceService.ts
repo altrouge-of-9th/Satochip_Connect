@@ -1,5 +1,10 @@
 import { ethers } from 'ethers';
 import { EIP155_RPCS_BY_CHAINS, EIP155_CHAINS } from '@/constants/Eip155';
+import {
+  getAvailableRpcUrls,
+  recordRpcFailure,
+  recordRpcSuccess,
+} from '@/utils/RpcEndpointHealth';
 
 export interface BalanceEntry {
   balance: string; // in Wei, stored as string
@@ -46,9 +51,9 @@ class BalanceService {
     const chainInfo = EIP155_CHAINS[chainKey];
     const chainName = chainInfo?.name || `Chain ${chainId}`;
     const symbol = chainInfo?.symbol || '';
-    const rpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
+    const configuredRpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
 
-    if (!rpcUrls || rpcUrls.length === 0) {
+    if (!configuredRpcUrls || configuredRpcUrls.length === 0) {
       return {
         balance: '0',
         decimals: 18,
@@ -57,6 +62,19 @@ class BalanceService {
         chainName,
         symbol,
         error: `No RPC URLs configured for chain ${chainId}`,
+      };
+    }
+
+    const rpcUrls = getAvailableRpcUrls(chainId);
+    if (rpcUrls.length === 0) {
+      return {
+        balance: '0',
+        decimals: 18,
+        timestamp: Date.now(),
+        chainId,
+        chainName,
+        symbol,
+        error: `All RPC endpoints for chain ${chainId} are temporarily unavailable after repeated failures`,
       };
     }
 
@@ -75,6 +93,7 @@ class BalanceService {
 
         const balancePromise = provider.getBalance(address);
         const balance = await Promise.race([balancePromise, timeoutPromise]);
+        recordRpcSuccess(chainId, rpcUrl);
 
         // console.log(`[BalanceService] Successfully fetched balance: ${balance.toString()} Wei`);
 
@@ -88,6 +107,7 @@ class BalanceService {
         };
       } catch (error) {
         console.warn(`[BalanceService] RPC ${rpcUrl} failed:`, error);
+        recordRpcFailure(chainId, rpcUrl);
 
         // If this was the last RPC URL, return error
         if (i === rpcUrls.length - 1) {
@@ -107,7 +127,7 @@ class BalanceService {
       }
     }
 
-    // Fallback (should never reach here)
+    // Every endpoint was attempted, or the list became empty while requests ran.
     return {
       balance: '0',
       decimals: 18,
@@ -115,7 +135,7 @@ class BalanceService {
       chainId,
       chainName,
       symbol,
-      error: 'Unexpected error fetching balance',
+      error: `All RPC endpoints failed for chain ${chainId}`,
     };
   }
 

@@ -405,7 +405,7 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
   43114: [
     'https://avax-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
     'https://api.avax.network/ext/bc/C/rpc',
-    '1rpc.io/avax/c',
+    'https://1rpc.io/avax/c',
   ],
 
   // Avalanche Fuji Testnet
@@ -429,7 +429,7 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
     'https://base-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
     'https://mainnet.base.org',
     'https://base.llamarpc.com',
-    '1rpc.io/base',
+    'https://1rpc.io/base',
   ],
 
   // Base Sepolia
@@ -451,7 +451,7 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
   324: [
     'https://zksync-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
     'https://mainnet.era.zksync.io',
-    '1rpc.io/zksync2-era',
+    'https://1rpc.io/zksync2-era',
   ],
 
   // Polygon zkEVM
