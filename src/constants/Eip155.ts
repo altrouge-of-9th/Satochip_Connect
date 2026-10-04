@@ -19,6 +19,8 @@ import Base from '@/assets/chains/base.webp';
 import Aurora from '@/assets/chains/aurora.webp';
 import Mizuhiki from '@/assets/chains/mizuhiki.webp';
 import Kaia from '@/assets/chains/kaia.webp';
+import HyperEVM from '@/assets/chains/hype.webp';
+import Bera from '@/assets/chains/bera.webp';
 import Unknown from '@/assets/chains/unknown.png';
 import { Chain } from '@/utils/TypesUtil';
 import { ImageSourcePropType } from 'react-native';
@@ -34,13 +36,6 @@ export const EIP155_CHAINS: Record<string, Chain> = {
     name: 'Ethereum',
     symbol: 'ETH',
     rpcUrl: 'https://eth.llamarpc.com',
-  },
-  'eip155:5': {
-    chainId: '5',
-    namespace: 'eip155',
-    name: 'Ethereum Goerli',
-    symbol: 'ETH',
-    rpcUrl: 'https://rpc.ankr.com/eth_goerli',
   },
   'eip155:11155111': {
     chainId: '11155111',
@@ -231,13 +226,41 @@ export const EIP155_CHAINS: Record<string, Chain> = {
     symbol: 'KAIA',
     rpcUrl: 'https://public-en-kairos.node.kaia.io',
   },
+  'eip155:999': {
+    chainId: '999',
+    namespace: 'eip155',
+    name: 'Hyperliquid Mainnet',
+    symbol: 'HYPE',
+    rpcUrl: 'https://rpc.hyperliquid.xyz/evm',
+  },
+  'eip155:998': {
+    chainId: '998',
+    namespace: 'eip155',
+    name: 'Hyperliquid Testnet',
+    symbol: 'HYPE',
+    rpcUrl: 'https://rpc.hyperliquid-testnet.xyz/evm',
+  },
+  'eip155:80094': {
+    chainId: '80094',
+    namespace: 'eip155',
+    name: 'Berachain',
+    symbol: 'BERA',
+    rpcUrl: 'https://rpc.berachain.com',
+  },
+  'eip155:80069': {
+    chainId: '80069',
+    namespace: 'eip155',
+    name: 'Berachain Bepolia',
+    symbol: 'BERA',
+    rpcUrl: 'https://bepolia.rpc.berachain.com',
+  },
 };
 
 export const EIP155_NETWORK_IMAGES: Record<string, ImageSourcePropType> = {
   'eip155:1': Ethereum,
-  'eip155:5': Unknown,
   'eip155:11155111': Unknown,
   'eip155:42161': Arbitrum,
+  'eip155:42164': Unknown,
   'eip155:43114': Avalanche,
   'eip155:43113': Avalanche,
   'eip155:56': Binance,
@@ -260,9 +283,13 @@ export const EIP155_NETWORK_IMAGES: Record<string, ImageSourcePropType> = {
   'eip155:8453': Base,
   'eip155:1313161554': Aurora,
   'eip155:6498': Mizuhiki,
-  'eip155:6497': Mizuhiki,
+  'eip155:6497': Unknown,
   'eip155:8217': Kaia,
-  'eip155:1001': Kaia,
+  'eip155:1001': Unknown,
+  'eip155:999': HyperEVM,
+  'eip155:998': Unknown,
+  'eip155:80094': Bera,
+  'eip155:80069': Unknown,
 };
 
 export const EIP155_SIGNING_METHODS = {
@@ -456,7 +483,7 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
 
   // Polygon zkEVM
   1101: [
-    'https://polygonzkevm-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    // No Alchemy support
     'https://zkevm-rpc.com',
     'https://1rpc.io/polygon/zkevm',
   ],
@@ -489,14 +516,38 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
 
   // KAIA Mainnet
   8217: [
-    // No Alchemy support
+    'https://kaia-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
     'https://public-en.node.kaia.io',
     'https://1rpc.io/klay',
   ],
 
   // KAIA Kairos Testnet
   1001: [
-    // No Alchemy support
+    'https://kaia-testnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
     'https://public-en-kairos.node.kaia.io',
+  ],
+
+  // Hyperliquid Mainnet
+  999: [
+    'https://hyperliquid-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    'https://rpc.hyperliquid.xyz/evm',
+  ],
+
+  // Hyperliquid Testnet
+  998: [
+    'https://hyperliquid-testnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    'https://rpc.hyperliquid-testnet.xyz/evm',
+  ],
+
+  // Berachain
+  80094: [
+    'https://berachain-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    'https://rpc.berachain.com',
+  ],
+
+  // Berachain Bepolia
+  80069: [
+    'https://berachain-bepolia.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    'https://bepolia.rpc.berachain.com',
   ],
 };

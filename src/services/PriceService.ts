@@ -43,6 +43,8 @@ const CHAIN_TO_COINGECKO_ID: Record<number, string> = {
   42220: 'celo', // Celo
   1666600000: 'harmony', // Harmony
   8217: 'kaia', // Kaia
+  999: 'hyperliquid', // HYPE
+  80094: 'berachain-bera', // Bera
 };
 
 interface PriceCache {
