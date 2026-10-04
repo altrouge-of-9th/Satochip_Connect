@@ -1,5 +1,10 @@
 import { ethers } from 'ethers';
 import { EIP155_RPCS_BY_CHAINS, EIP155_CHAINS } from '@/constants/Eip155';
+import {
+  getAvailableRpcUrls,
+  recordRpcFailure,
+  recordRpcSuccess,
+} from '@/utils/RpcEndpointHealth';
 
 export interface BuildTransactionParams {
   from: string;
@@ -61,10 +66,15 @@ class TransactionService {
     chainId: number,
     pending: boolean = true
   ): Promise<number> {
-    const rpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
+    const configuredRpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
 
-    if (!rpcUrls || rpcUrls.length === 0) {
+    if (!configuredRpcUrls || configuredRpcUrls.length === 0) {
       throw new Error(`No RPC URLs configured for chain ${chainId}`);
+    }
+
+    const rpcUrls = getAvailableRpcUrls(chainId);
+    if (rpcUrls.length === 0) {
+      throw new Error(`All RPC endpoints for chain ${chainId} are temporarily unavailable after repeated failures`);
     }
 
     // Try each RPC URL until one succeeds
@@ -85,11 +95,13 @@ class TransactionService {
           pending ? 'pending' : 'latest'
         );
         const nonce = await Promise.race([noncePromise, timeoutPromise]);
+        recordRpcSuccess(chainId, rpcUrl);
 
         console.log(`[TransactionService] Fetched nonce: ${nonce}`);
         return nonce;
       } catch (error) {
         console.warn(`[TransactionService] RPC ${rpcUrl} failed for nonce:`, error);
+        recordRpcFailure(chainId, rpcUrl);
 
         // If this was the last RPC URL, throw error
         if (i === rpcUrls.length - 1) {
@@ -121,11 +133,17 @@ class TransactionService {
     data: string = '0x',
     chainId: number
   ): Promise<string> {
-    const rpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
+    const configuredRpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
 
-    if (!rpcUrls || rpcUrls.length === 0) {
+    if (!configuredRpcUrls || configuredRpcUrls.length === 0) {
       console.warn(`[TransactionService] No RPC URLs for chain ${chainId}, using fallback gas`);
       return '0x5208'; // 21000 in hex
+    }
+
+    const rpcUrls = getAvailableRpcUrls(chainId);
+    if (rpcUrls.length === 0) {
+      console.warn(`[TransactionService] All RPC endpoints for chain ${chainId} are in cooldown, using fallback gas`);
+      return '0x5208';
     }
 
     // Try each RPC URL until one succeeds
@@ -149,6 +167,7 @@ class TransactionService {
         });
 
         const gasEstimate = await Promise.race([estimatePromise, timeoutPromise]);
+        recordRpcSuccess(chainId, rpcUrl);
 
         // Add 10% buffer for safety
         const gasWithBuffer = gasEstimate.mul(110).div(100);
@@ -159,6 +178,7 @@ class TransactionService {
         return gasWithBuffer.toHexString();
       } catch (error) {
         console.warn(`[TransactionService] RPC ${rpcUrl} failed for gas estimation:`, error);
+        recordRpcFailure(chainId, rpcUrl);
 
         // If this was the last RPC URL, use fallback
         if (i === rpcUrls.length - 1) {
@@ -185,10 +205,15 @@ class TransactionService {
    * @returns Gas price info (legacy OR EIP-1559)
    */
   async fetchGasPrice(chainId: number): Promise<GasPriceResult> {
-    const rpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
+    const configuredRpcUrls = EIP155_RPCS_BY_CHAINS[chainId];
 
-    if (!rpcUrls || rpcUrls.length === 0) {
+    if (!configuredRpcUrls || configuredRpcUrls.length === 0) {
       throw new Error(`No RPC URLs configured for chain ${chainId}`);
+    }
+
+    const rpcUrls = getAvailableRpcUrls(chainId);
+    if (rpcUrls.length === 0) {
+      throw new Error(`All RPC endpoints for chain ${chainId} are temporarily unavailable after repeated failures`);
     }
 
     // Try each RPC URL until one succeeds
@@ -211,6 +236,7 @@ class TransactionService {
 
           // Check if EIP-1559 is supported (has maxFeePerGas)
           if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+            recordRpcSuccess(chainId, rpcUrl);
             console.log(
               `[TransactionService] EIP-1559 gas: maxFee=${feeData.maxFeePerGas.toString()}, maxPriority=${feeData.maxPriorityFeePerGas.toString()}`
             );
@@ -222,6 +248,7 @@ class TransactionService {
 
           // If EIP-1559 not supported but gasPrice available, use legacy
           if (feeData.gasPrice) {
+            recordRpcSuccess(chainId, rpcUrl);
             console.log(`[TransactionService] Legacy gas price: ${feeData.gasPrice.toString()}`);
             return {
               legacy: feeData.gasPrice.toHexString(),
@@ -236,6 +263,7 @@ class TransactionService {
         // Fallback to legacy getGasPrice()
         const gasPricePromise = provider.getGasPrice();
         const gasPrice = await Promise.race([gasPricePromise, timeoutPromise]);
+        recordRpcSuccess(chainId, rpcUrl);
 
         console.log(`[TransactionService] Legacy gas price: ${gasPrice.toString()}`);
         return {
@@ -243,6 +271,7 @@ class TransactionService {
         };
       } catch (error) {
         console.warn(`[TransactionService] RPC ${rpcUrl} failed for gas price:`, error);
+        recordRpcFailure(chainId, rpcUrl);
 
         // If this was the last RPC URL, throw error
         if (i === rpcUrls.length - 1) {

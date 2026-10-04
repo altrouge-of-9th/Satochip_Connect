@@ -1,5 +1,10 @@
 import { ethers } from 'ethers';
 import { EIP155_RPCS_BY_CHAINS } from '@/constants/Eip155';
+import {
+  getAvailableRpcUrls,
+  recordRpcFailure,
+  recordRpcSuccess,
+} from '@/utils/RpcEndpointHealth';
 
 // Transaction type definitions
 export interface TransactionRequest {
@@ -352,7 +357,7 @@ export async function broadcastTransaction(
       }
     }
 
-    // Get all public RPC URLs for the chain
+    // Get public RPC URLs that are not currently in cooldown
     const rpcUrls = getPublicRpcUrls(chainId);
 
     if (!rpcUrls || rpcUrls.length === 0) {
@@ -360,7 +365,7 @@ export async function broadcastTransaction(
     }
 
     // Try multiple endpoints with fallback
-    return await tryMultipleRpcEndpoints(signedTx, rpcUrls);
+    return await tryMultipleRpcEndpoints(signedTx, rpcUrls, chainId);
   } catch (error) {
     console.error('Error broadcasting transaction:', error);
     throw error;
@@ -377,6 +382,7 @@ export async function broadcastTransaction(
 export async function tryMultipleRpcEndpoints(
   signedTx: string,
   rpcUrls: string[],
+  chainId?: number,
 ): Promise<string> {
   let lastError: any;
 
@@ -394,10 +400,16 @@ export async function tryMultipleRpcEndpoints(
 
       const txResponse = await Promise.race([txResponsePromise, timeoutPromise]);
 
+      if (chainId !== undefined) {
+        recordRpcSuccess(chainId, rpcUrl);
+      }
       console.log(`Transaction with hash ${txResponse.hash} broadcast successfully`);
       return txResponse.hash;
     } catch (error: any) {
       console.warn(`Failed to broadcast via ${rpcUrl}:`, error.message);
+      if (chainId !== undefined) {
+        recordRpcFailure(chainId, rpcUrl);
+      }
       lastError = error;
       // Continue to next RPC endpoint
     }
@@ -416,9 +428,14 @@ export async function tryMultipleRpcEndpoints(
  * @returns Array of RPC URLs
  */
 export function getPublicRpcUrls(chainId: number): string[] {
-  const urls = EIP155_RPCS_BY_CHAINS[chainId];
-  if (!urls || urls.length === 0) {
+  const configuredUrls = EIP155_RPCS_BY_CHAINS[chainId];
+  if (!configuredUrls || configuredUrls.length === 0) {
     throw new Error(`No public RPC URL available for chainId ${chainId}`);
+  }
+
+  const urls = getAvailableRpcUrls(chainId);
+  if (!urls || urls.length === 0) {
+    throw new Error(`All public RPC endpoints for chainId ${chainId} are temporarily unavailable after repeated failures`);
   }
 
   return urls;
