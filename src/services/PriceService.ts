@@ -45,6 +45,8 @@ const CHAIN_TO_COINGECKO_ID: Record<number, string> = {
   8217: 'kaia', // Kaia
   999: 'hyperliquid', // HYPE
   80094: 'berachain-bera', // Bera
+  5042: 'usd-coin', // Arc
+  295: 'hedera-hashgraph', // Hedera
 };
 
 interface PriceCache {

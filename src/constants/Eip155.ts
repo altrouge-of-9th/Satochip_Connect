@@ -21,6 +21,8 @@ import Mizuhiki from '@/assets/chains/mizuhiki.webp';
 import Kaia from '@/assets/chains/kaia.webp';
 import HyperEVM from '@/assets/chains/hype.webp';
 import Bera from '@/assets/chains/bera.webp';
+import Arc from '@/assets/chains/arc.webp';
+import Hedera from '@/assets/chains/hedera.webp';
 import Unknown from '@/assets/chains/unknown.png';
 import { Chain } from '@/utils/TypesUtil';
 import { ImageSourcePropType } from 'react-native';
@@ -135,6 +137,13 @@ export const EIP155_CHAINS: Record<string, Chain> = {
     symbol: 'ETH',
     rpcUrl: 'https://mainnet.era.zksync.io',
   },
+  'eip155:300': {
+    chainId: '300',
+    namespace: 'eip155',
+    name: 'zkSync Sepolia Testnet',
+    symbol: 'ETH',
+    rpcUrl: 'https://sepolia.era.zksync.dev',
+  },
   'eip155:314': {
     chainId: '314',
     namespace: 'eip155',
@@ -215,7 +224,7 @@ export const EIP155_CHAINS: Record<string, Chain> = {
   'eip155:8217': {
     chainId: '8217',
     namespace: 'eip155',
-    name: 'Kaia Mainnet',
+    name: 'Kaia',
     symbol: 'KAIA',
     rpcUrl: 'https://public-en.node.kaia.io',
   },
@@ -229,7 +238,7 @@ export const EIP155_CHAINS: Record<string, Chain> = {
   'eip155:999': {
     chainId: '999',
     namespace: 'eip155',
-    name: 'Hyperliquid Mainnet',
+    name: 'HyperEVM',
     symbol: 'HYPE',
     rpcUrl: 'https://rpc.hyperliquid.xyz/evm',
   },
@@ -253,6 +262,34 @@ export const EIP155_CHAINS: Record<string, Chain> = {
     name: 'Berachain Bepolia',
     symbol: 'BERA',
     rpcUrl: 'https://bepolia.rpc.berachain.com',
+  },
+  'eip155:5042': {
+    chainId: '5042',
+    namespace: 'eip155',
+    name: 'Arc',
+    symbol: 'USDC',
+    rpcUrl: 'https://rpc.mainnet.arc.io',
+  },
+  'eip155:5042002': {
+    chainId: '5042002',
+    namespace: 'eip155',
+    name: 'Arc Testnet',
+    symbol: 'USDC',
+    rpcUrl: 'https://rpc.testnet.arc.network',
+  },
+  'eip155:295': {
+    chainId: '295',
+    namespace: 'eip155',
+    name: 'Hedera Hashgraph',
+    symbol: 'HBAR',
+    rpcUrl: 'https://mainnet.hashio.io/api',
+  },
+  'eip155:296': {
+    chainId: '296',
+    namespace: 'eip155',
+    name: 'Hedera Testnet',
+    symbol: 'HBAR',
+    rpcUrl: 'https://testnet.hashio.io/api',
   },
 };
 
@@ -290,6 +327,10 @@ export const EIP155_NETWORK_IMAGES: Record<string, ImageSourcePropType> = {
   'eip155:998': Unknown,
   'eip155:80094': Bera,
   'eip155:80069': Unknown,
+  'eip155:5042': Arc,
+  'eip155:5042002': Unknown,
+  'eip155:295': Hedera,
+  'eip155:296': Unknown,
 };
 
 export const EIP155_SIGNING_METHODS = {
@@ -311,12 +352,18 @@ export const EIP155_TOKEN_SUPPORTED_CHAIN_IDS: number[] = [
   42161,  // Arbitrum One
   8453,   // Base
   43114,  // Avalanche
+  43113,  // Avalanche Fuji
   10,     // Optimism
   42220,  // Celo
   324,    // zkSync
   11155111,// Sepolia
-  //250, // Fantom has no Alchemy token API support
+  // 250, // Fantom has no Alchemy token API support
   // 100, // Gnosis has no Alchemy token API support
+  // 8217,// Kaia has no Alchemy token API support
+  999,    // HyperEVM
+  80094,  // Berachain
+  5042,   // Arc
+  295,    // Hedera
 ];
 
 // ChainIds for which NFT balances are displayed (Alchemy NFT API support)
@@ -339,10 +386,14 @@ export const ALCHEMY_NETWORK_SLUGS: Record<number, string> = {
   42161:    'arb-mainnet',
   8453:     'base-mainnet',
   43114:    'avax-mainnet',
+  43113:    'avax-fuji',
   10:       'opt-mainnet',
   42220:    'celo-mainnet',
   324:      'zksync-mainnet',
   11155111: 'eth-sepolia',
+  999:      'hyperliquid-mainnet',
+  80094:    'berachain-mainnet',
+  5042:     'arc-mainnet',
 };
 
 // todo: fetch rpcs from https://chainlist.org/rpcs.json
@@ -481,6 +532,12 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
     'https://1rpc.io/zksync2-era',
   ],
 
+  // zkSync Sepolia Testnet
+  300: [
+    'https://zksync-sepolia.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    'https://sepolia.era.zksync.dev',
+  ],
+
   // Polygon zkEVM
   1101: [
     // No Alchemy support
@@ -549,5 +606,27 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
   80069: [
     'https://berachain-bepolia.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
     'https://bepolia.rpc.berachain.com',
+  ],
+
+  // Arc
+  5042: [
+    'https://arc-mainnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    'https://rpc.mainnet.arc.io',
+  ],
+  // Arc Testnet
+  5042002: [
+    'https://arc-testnet.g.alchemy.com/v2/'+ALCHEMY_API_KEY,
+    'https://rpc.testnet.arc.network',
+  ],
+
+  // Hedera
+  295: [
+    // No Alchemy support
+    'https://mainnet.hashio.io/api',
+  ],
+  // Hedera Testnet
+  296: [
+    // No Alchemy support
+    'https://testnet.hashio.io/api',
   ],
 };
