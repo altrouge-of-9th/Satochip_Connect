@@ -207,6 +207,13 @@ export const EIP155_CHAINS: Record<string, Chain> = {
     symbol: 'ETH',
     rpcUrl: 'https://mainnet.aurora.dev',
   },
+  'eip155:1313161555': {
+    chainId: '1313161555',
+    namespace: 'eip155',
+    name: 'Aurora Testnet',
+    symbol: 'ETH',
+    rpcUrl: 'https://testnet.aurora.dev',
+  },
   'eip155:6498': {
     chainId: '6498',
     namespace: 'eip155',
@@ -319,6 +326,7 @@ export const EIP155_NETWORK_IMAGES: Record<string, ImageSourcePropType> = {
   'eip155:42220': Celo,
   'eip155:8453': Base,
   'eip155:1313161554': Aurora,
+  'eip155:1313161555': Unknown,
   'eip155:6498': Mizuhiki,
   'eip155:6497': Unknown,
   'eip155:8217': Kaia,
@@ -363,7 +371,7 @@ export const EIP155_TOKEN_SUPPORTED_CHAIN_IDS: number[] = [
   999,    // HyperEVM
   80094,  // Berachain
   5042,   // Arc
-  295,    // Hedera
+  // 295, // Hedera has no Alchemy token API support
 ];
 
 // ChainIds for which NFT balances are displayed (Alchemy NFT API support)
@@ -517,6 +525,16 @@ export const EIP155_RPCS_BY_CHAINS: { [key: number]: string[] } = {
     'https://base-sepolia.drpc.org',
     'https://base-sepolia-public.nodies.app',
     'https://base-sepolia-rpc.publicnode.com',
+  ],
+
+  // Aurora
+  1313161554: [
+    'https://mainnet.aurora.dev',
+  ],
+  
+  // Aurora Testnet
+  1313161555: [
+    'https://testnet.aurora.dev',
   ],
 
   // Gnosis Chain (xDai)
