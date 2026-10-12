@@ -11,6 +11,10 @@ import {Events} from '@/components/Modal/Events';
 import SettingsStore from '@/store/SettingsStore';
 import {RootStackScreenProps} from '@/utils/TypesUtil';
 import {DappInfo} from './components/DappInfo';
+import {Chains} from '@/components/Modal/Chains';
+import {ChainSelector} from '@/components/ChainSelector';
+import {PresetsUtil} from '@/utils/PresetsUtil';
+import Toast from 'react-native-toast-message';
 import styles from './styles';
 
 type Props = RootStackScreenProps<'SessionDetail'>;
@@ -24,6 +28,7 @@ export default function SessionDetail({route}: Props) {
   const [pingLoading, setPingLoading] = useState(false);
   const [emitLoading, setEmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [featuredChainId, setFeaturedChainId] = useState<number | null>(null);
 
   const session = useMemo(
     () =>
@@ -32,6 +37,34 @@ export default function SessionDetail({route}: Props) {
   );
   const namespaces = useMemo(() => session?.namespaces, [session]);
   const isLinkMode = session?.transportType === 'link_mode';
+  const approvedEip155ChainIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          Object.values(namespaces ?? {})
+            .flatMap(namespace => namespace.chains ?? [])
+            .filter(chain => chain.startsWith('eip155:'))
+            .map(chain => Number(chain.split(':')[1]))
+            .filter(Number.isSafeInteger),
+        ),
+      ),
+    [namespaces],
+  );
+  const selectedChainId =
+    featuredChainId !== null &&
+    approvedEip155ChainIds.includes(featuredChainId)
+      ? featuredChainId
+      : approvedEip155ChainIds[0];
+  const approvedChains = useMemo(
+    () =>
+      Object.values(namespaces ?? {})
+        .flatMap(namespace => namespace.chains ?? [])
+        .flatMap(chain => {
+          const chainData = PresetsUtil.getChainData(chain);
+          return chainData ? [chainData] : [];
+        }),
+    [namespaces],
+  );
 
   // Get necessary data from session
   const expiryDate = useMemo(
@@ -60,6 +93,35 @@ export default function SessionDetail({route}: Props) {
     await walletKit.engine.signClient.ping({topic});
     setPingLoading(false);
   }, [topic]);
+
+  const onFeaturedChainSelect = useCallback(
+    async (chainId: number) => {
+      const chain = `eip155:${chainId}`;
+      if (!session?.namespaces.eip155?.chains?.includes(chain)) {
+        Toast.show({
+          type: 'error',
+          text1: 'This chain is not approved for the session',
+        });
+        return;
+      }
+
+      try {
+        await walletKit.emitSessionEvent({
+          topic,
+          event: {name: 'chainChanged', data: chainId},
+          chainId: chain,
+        });
+        setFeaturedChainId(chainId);
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to switch dApp chain',
+          text2: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+    [session?.namespaces, topic],
+  );
 
   const onSessionEmit = useCallback(async () => {
     setEmitLoading(true);
@@ -139,6 +201,26 @@ export default function SessionDetail({route}: Props) {
             </View>
           );
         })}
+      <Text style={[styles.reviewText, {color: Theme['fg-100']}]}>
+        Connected chains
+      </Text>
+      {approvedChains.length > 0 ? (
+        <Chains chains={approvedChains} wrap />
+      ) : (
+        <Text style={{color: Theme['fg-175']}}>No approved chains</Text>
+      )}
+      {selectedChainId !== undefined && (
+        <View style={styles.chainSwitchContainer}>
+          <Text style={[styles.reviewText, {color: Theme['fg-100']}]}>
+            Featured chain
+          </Text>
+          <ChainSelector
+            selectedChainId={selectedChainId}
+            supportedChainIds={approvedEip155ChainIds}
+            onSelect={onFeaturedChainSelect}
+          />
+        </View>
+      )}
       <DappInfo session={session} />
       <View style={[styles.divider, {backgroundColor: Theme['bg-300']}]} />
       <View style={styles.datesContainer}>

@@ -35,4 +35,7 @@ export default StyleSheet.create({
   permissions: {
     maxHeight: '100%',
   },
+  chainSwitchContainer: {
+    rowGap: 8,
+  },
 });

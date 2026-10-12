@@ -6,35 +6,47 @@ import {PresetsUtil} from '@/utils/PresetsUtil';
 
 interface Props {
   chains?: Chain[];
+  wrap?: boolean;
 }
 
-export function Chains({chains}: Props) {
+export function Chains({chains, wrap = false}: Props) {
   const Theme = useTheme();
+  const chainItems = chains?.map(chain => {
+    const logo = PresetsUtil.getChainLogo(`${chain.namespace}:${chain.chainId}`);
+    return (
+      <View
+        key={chain.name}
+        style={[styles.chain, {borderColor: Theme['bg-300']}]}>
+        <Image
+          source={logo}
+          style={[styles.chainLogo, {backgroundColor: Theme['bg-300']}]}
+        />
+        <Text style={[styles.chainName, {color: Theme['fg-150']}]}>
+          {chain.name}
+        </Text>
+      </View>
+    );
+  });
 
-  return (
-    <ScrollView
-      bounces={false}
-      style={[styles.container, {backgroundColor: Theme['bg-150']}]}
-      contentContainerStyle={styles.content}>
+  const content = (
+    <>
       <Text style={[styles.title, {color: Theme['fg-150']}]}>
         Blockchain(s)
       </Text>
-      <View style={styles.row}>
-        {chains?.map(chain => {
-          const logo = PresetsUtil.getChainLogo(`${chain.namespace}:${chain.chainId}`);
-          return (
-            <View
-              key={chain.name}
-              style={[styles.chain, {borderColor: Theme['bg-300']}]}>
-              <Image
-                source={logo}
-                style={[styles.chainLogo, {backgroundColor: Theme['bg-300']}]}
-              />
-              <Text style={[styles.chainName, {color: Theme['fg-150']}]}>{chain.name}</Text>
-            </View>
-          );
-        })}
-      </View>
+      <View style={styles.row}>{chainItems}</View>
+    </>
+  );
+
+  return wrap ? (
+    <View style={[styles.container, styles.wrappedContainer, {backgroundColor: Theme['bg-150']}]}>
+      {content}
+    </View>
+  ) : (
+    <ScrollView
+      bounces={false}
+      style={[styles.container, styles.scrollContainer, {backgroundColor: Theme['bg-150']}]}
+      contentContainerStyle={styles.content}>
+      {content}
     </ScrollView>
   );
 }
@@ -42,7 +54,13 @@ export function Chains({chains}: Props) {
 const styles = StyleSheet.create({
   container: {
     borderRadius: 20,
+  },
+  scrollContainer: {
     maxHeight: 120,
+  },
+  wrappedContainer: {
+    alignItems: 'flex-start',
+    padding: 8,
   },
   content: {
     padding: 8,
