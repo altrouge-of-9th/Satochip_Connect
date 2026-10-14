@@ -53,6 +53,13 @@ export const EIP155_CHAINS: Record<string, Chain> = {
     symbol: 'ETH',
     rpcUrl: 'https://arb1.arbitrum.io/rpc',
   },
+  'eip155:421614': {
+    chainId: '421614',
+    namespace: 'eip155',
+    name: 'Arbitrum Sepolia',
+    symbol: 'ETH',
+    rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc',
+  },
   'eip155:43114': {
     chainId: '43114',
     namespace: 'eip155',
@@ -304,16 +311,16 @@ export const EIP155_NETWORK_IMAGES: Record<string, ImageSourcePropType> = {
   'eip155:1': Ethereum,
   'eip155:11155111': Unknown,
   'eip155:42161': Arbitrum,
-  'eip155:42164': Unknown,
+  'eip155:421614': Unknown,
   'eip155:43114': Avalanche,
-  'eip155:43113': Avalanche,
+  'eip155:43113': Unknown,
   'eip155:56': Binance,
   'eip155:97': Unknown,
   'eip155:250': Fantom,
   'eip155:10': Optimism,
-  'eip155:11155420': Optimism,
+  'eip155:11155420': Unknown,
   'eip155:137': Polygon,
-  'eip155:80002': Polygon,
+  'eip155:80002': Unknown,
   'eip155:100': Gnosis,
   'eip155:9001': Evmos,
   'eip155:324': ZkSync,
@@ -358,6 +365,7 @@ export const EIP155_TOKEN_SUPPORTED_CHAIN_IDS: number[] = [
   56,     // Binance Smart Chain
   137,    // Polygon
   42161,  // Arbitrum One
+  421614,  // Arbitrum Sepolia
   8453,   // Base
   43114,  // Avalanche
   43113,  // Avalanche Fuji
@@ -392,6 +400,7 @@ export const ALCHEMY_NETWORK_SLUGS: Record<number, string> = {
   56:       'bnb-mainnet',
   137:      'polygon-mainnet',
   42161:    'arb-mainnet',
+  421614:   'arb-sepolia',
   8453:     'base-mainnet',
   43114:    'avax-mainnet',
   43113:    'avax-fuji',
