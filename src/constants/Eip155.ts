@@ -365,7 +365,7 @@ export const EIP155_TOKEN_SUPPORTED_CHAIN_IDS: number[] = [
   56,     // Binance Smart Chain
   137,    // Polygon
   42161,  // Arbitrum One
-  421614,  // Arbitrum Sepolia
+  421614, // Arbitrum Sepolia
   8453,   // Base
   43114,  // Avalanche
   43113,  // Avalanche Fuji
