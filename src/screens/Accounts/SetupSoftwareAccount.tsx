@@ -354,7 +354,7 @@ export default function SetupSoftwareAccountScreen({ navigation }: Props) {
           <Text style={[
             setupStyles.createButtonText,
             {
-              color: ( !cardLabel.trim() )
+              color: ctaDisabled
                 ? Theme['fg-300']
                 : Theme['inverse-100']
             }
