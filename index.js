@@ -1,7 +1,4 @@
-import { TextEncoder, TextDecoder } from 'text-encoding';
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-
+import './polyfills';
 import 'react-native-gesture-handler';
 import '@walletconnect/react-native-compat';
 import './shim.js'

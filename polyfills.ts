@@ -1,2 +1,4 @@
-import 'react-native-gesture-handler';
-import '@walletconnect/react-native-compat';
+import {TextDecoder, TextEncoder} from 'text-encoding';
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
