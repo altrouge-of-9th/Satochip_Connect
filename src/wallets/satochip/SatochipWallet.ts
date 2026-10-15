@@ -25,6 +25,7 @@ import {
   parseDERSignature,
   recoverVValue,
 } from '@/utils/SignatureUtils';
+import { keccak256 } from "@ethersproject/keccak256";
 
 export class SatochipWallet implements ISatochipWallet {
   public readonly type = WalletType.SATOCHIP;
@@ -148,6 +149,49 @@ export class SatochipWallet implements ISatochipWallet {
       throw new WalletError(
         WalletErrorType.SIGNING_FAILED,
         'Failed to sign Ethereum message with Satochip',
+        error as Error,
+      );
+    }
+  }
+
+  public async signRawMsg(
+    message: string,
+    card: SatochipCard,
+    pin: string,
+    address: string,
+    chainId: number,
+  ): Promise<string> {
+    try {
+      const msg = ethers.utils.isHexString(message) ? message : ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
+      const hashHexString = keccak256(msg)
+      const hashBytes = Buffer.from(hashHexString.slice(2), 'hex');
+
+      const derSig = await signWithSatochip(
+        card,
+        this.satochipInfo.masterXfp,
+        this.satochipInfo.derivationPath,
+        hashBytes,
+        pin,
+      );
+
+      const { r, s } = parseDERSignature(derSig);
+
+      const v = await recoverVValue(
+        hashHexString,
+        r,
+        s,
+        address,
+        chainId,
+        1,
+        false,
+      );
+
+      return r + s.slice(2) + v.toString(16).padStart(2, '0');
+    } catch (error) {
+      console.error('Error signing Raw Hash with Satochip:', error);
+      throw new WalletError(
+        WalletErrorType.SIGNING_FAILED,
+        'Failed to sign Raw Hash with Satochip',
         error as Error,
       );
     }

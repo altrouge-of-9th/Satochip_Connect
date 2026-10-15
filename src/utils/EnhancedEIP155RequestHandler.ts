@@ -78,8 +78,7 @@ export async function approveEIP155RequestEnhanced(
 
     // Handle different signing methods
     switch (request.method) {
-      case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
-      case EIP155_SIGNING_METHODS.ETH_SIGN: {
+      case EIP155_SIGNING_METHODS.PERSONAL_SIGN: {
         const message = getSignParamsMessage(request.params);
         if (!message) {
           throw new WalletError(
@@ -107,6 +106,37 @@ export async function approveEIP155RequestEnhanced(
           );
         }
         console.info(`Signed message for address: ${address}`);
+        return formatJsonRpcResult(id, signedMessage);
+      }
+
+      case EIP155_SIGNING_METHODS.ETH_SIGN: {
+        const message = getSignParamsMessage(request.params);
+        if (!message) {
+          throw new WalletError(
+            WalletErrorType.SIGNING_FAILED,
+            'Message is empty',
+          );
+        }
+
+        let signedMessage: string;
+        if (wallet.type === WalletType.SATOCHIP) {
+          // Use high-level SatochipWallet method
+          signedMessage = await withModal(async () =>
+            (wallet as SatochipWallet).signRawMsg(
+              message,
+              card,
+              pin,
+              address,
+              chainId,
+            ),
+          )();
+        } else {
+          // software wallet
+          signedMessage = await (wallet as ISoftwareWallet).signMessage(
+            message,
+          );
+        }
+        console.info(`Signed Raw message for address: ${address}`);
         return formatJsonRpcResult(id, signedMessage);
       }
 
