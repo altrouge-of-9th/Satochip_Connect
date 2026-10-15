@@ -72,6 +72,7 @@ export interface ISoftwareWallet extends IWalletProvider {
   getWalletInfo(): SoftwareWalletInfo;
   getMnemonic?(): string;
   exportPrivateKey?(): string;
+  signRawMessage(message: string): Promise<string>;
 }
 
 // Wallet creation parameters

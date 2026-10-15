@@ -22,6 +22,8 @@ import {
   getSignTypedDataParamsData,
   validateTransaction,
 } from '@/utils/HelperUtil';
+
+import { utils } from 'ethers';
 import { EIP155_SIGNING_METHODS } from '@/constants/Eip155';
 import SettingsStore from '@/store/SettingsStore.ts';
 import { SatochipWallet } from '@/wallets/satochip/SatochipWallet.ts';
@@ -110,11 +112,11 @@ export async function approveEIP155RequestEnhanced(
       }
 
       case EIP155_SIGNING_METHODS.ETH_SIGN: {
-        const message = getSignParamsMessage(request.params);
-        if (!message) {
+        const message = (request.params as string[]).filter(p => !utils.isAddress(p))[0];
+        if (!message || message === '0x' || !utils.isHexString(message)) {
           throw new WalletError(
             WalletErrorType.SIGNING_FAILED,
-            'Message is empty',
+            'Message is empty or invalid',
           );
         }
 
@@ -132,7 +134,7 @@ export async function approveEIP155RequestEnhanced(
           )();
         } else {
           // software wallet
-          signedMessage = await (wallet as ISoftwareWallet).signMessage(
+          signedMessage = await (wallet as ISoftwareWallet).signRawMessage(
             message,
           );
         }

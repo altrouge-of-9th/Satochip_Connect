@@ -105,6 +105,15 @@ export class EIP155SoftwareWallet implements ISoftwareWallet {
     return await this.wallet.signMessage(messageStr);
   }
 
+  public async signRawMessage(message: string): Promise<string> {
+    const rawBytes = utils.arrayify(message);
+    if (!this.wallet) {
+      throw new WalletError(WalletErrorType.WALLET_NOT_SET, "Wallet not set");
+    }
+    const digest = utils.keccak256(rawBytes);
+    return utils.joinSignature(this.wallet._signingKey().signDigest(digest));
+  }
+
   public async signTransaction(transaction: any): Promise<string> {
     if (!this.wallet) {
       throw new WalletError(WalletErrorType.WALLET_NOT_SET, "Wallet not set");
@@ -131,7 +140,7 @@ export class EIP155SoftwareWallet implements ISoftwareWallet {
   }
 
   public async isAvailable(): Promise<boolean> {
-    return (this.wallet!==undefined);
+    return (this.wallet !== undefined);
   }
 
   public getWalletInfo() {

@@ -162,7 +162,7 @@ export class SatochipWallet implements ISatochipWallet {
     chainId: number,
   ): Promise<string> {
     try {
-      const msg = ethers.utils.isHexString(message) ? message : ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
+      const msg = ethers.utils.arrayify(message);
       const hashHexString = keccak256(msg)
       const hashBytes = Buffer.from(hashHexString.slice(2), 'hex');
 
@@ -183,7 +183,7 @@ export class SatochipWallet implements ISatochipWallet {
         address,
         chainId,
         1,
-        false,
+        true,
       );
 
       return r + s.slice(2) + v.toString(16).padStart(2, '0');
