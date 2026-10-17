@@ -80,7 +80,8 @@ export async function approveEIP155RequestEnhanced(
 
     // Handle different signing methods
     switch (request.method) {
-      case EIP155_SIGNING_METHODS.PERSONAL_SIGN: {
+      case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
+      case EIP155_SIGNING_METHODS.ETH_SIGN: {
         const message = getSignParamsMessage(request.params);
         if (!message) {
           throw new WalletError(
@@ -111,20 +112,24 @@ export async function approveEIP155RequestEnhanced(
         return formatJsonRpcResult(id, signedMessage);
       }
 
-      case EIP155_SIGNING_METHODS.ETH_SIGN: {
-        const message = (request.params as string[]).filter(p => !utils.isAddress(p))[0];
-        if (!message || message === '0x' || !utils.isHexString(message)) {
+      case EIP155_SIGNING_METHODS.NEAR_SIGNHASH: {
+        const message = request.params[1];
+        if (
+          !Array.isArray(request.params) ||
+          request.params.length !== 2 ||
+          typeof message !== 'string' ||
+          !utils.isHexString(message, 32)
+        ) {
           throw new WalletError(
             WalletErrorType.SIGNING_FAILED,
-            'Message is empty or invalid',
+            'Hash must be a 32-byte hex string',
           );
         }
 
         let signedMessage: string;
         if (wallet.type === WalletType.SATOCHIP) {
-          // Use high-level SatochipWallet method
           signedMessage = await withModal(async () =>
-            (wallet as SatochipWallet).signRawMsg(
+            (wallet as SatochipWallet).signDigest(
               message,
               card,
               pin,
@@ -133,12 +138,11 @@ export async function approveEIP155RequestEnhanced(
             ),
           )();
         } else {
-          // software wallet
-          signedMessage = await (wallet as ISoftwareWallet).signRawMessage(
+          signedMessage = await (wallet as ISoftwareWallet).signHash(
             message,
           );
         }
-        console.info(`Signed Raw message for address: ${address}`);
+        console.info(`Signed hash for address: ${address}`);
         return formatJsonRpcResult(id, signedMessage);
       }
 

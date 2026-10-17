@@ -53,6 +53,7 @@ export default function useWalletKitEventsManager(initialized: boolean) {
       switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:
         case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
+        case EIP155_SIGNING_METHODS.NEAR_SIGNHASH:
           return ModalStore.open('SessionSignModal', {
             requestEvent,
             requestSession,

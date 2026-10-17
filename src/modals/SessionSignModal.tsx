@@ -27,6 +27,7 @@ import useSatochipModal from '@/hooks/useSatochipModal.ts';
 import { PinModal } from '@/components/Modal/PinModal.tsx';
 import NfcPrompt from '@/components/NfcPromptAndroid.tsx';
 import SettingsStore from '@/store/SettingsStore.ts';
+import { EIP155_SIGNING_METHODS } from '@/constants/Eip155';
 import { WalletType } from '@/types/WalletTypes.ts';
 
 export default function SessionSignModal() {
@@ -53,7 +54,10 @@ export default function SessionSignModal() {
   const method = requestEvent?.params?.request?.method!;
 
   // Get message, convert it to UTF8 string if it is valid hex
-  const message = getSignParamsMessage(request.params);
+  const message =
+    method === EIP155_SIGNING_METHODS.NEAR_SIGNHASH
+      ? request.params[1]
+      : getSignParamsMessage(request.params);
   const address = getEIP155AddressesFromParams(params);
   const wallet = SettingsStore.getWalletByAddress(address);
   const walletType = wallet?.type;

@@ -1,4 +1,11 @@
-import {ScrollView, StyleProp, StyleSheet, Text, ViewStyle} from 'react-native';
+import {
+  ScrollView,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle
+} from 'react-native';
 
 import {useTheme} from '@/hooks/useTheme';
 
@@ -23,7 +30,11 @@ export function Message({message, style, showTitle = true}: IMessageProps) {
       {showTitle && (
         <Text style={[styles.title, {color: Theme['fg-150']}]}>Message</Text>
       )}
-      <Text style={[styles.message, {color: Theme['fg-175']}]}>{message}</Text>
+      <View style={styles.row}>
+        <Text style={[styles.message, {color: Theme['fg-175']}]}>
+          {message}
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -34,16 +45,14 @@ const styles = StyleSheet.create({
     maxHeight: 120,
   },
   content: {
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    padding: 8,
   },
   title: {
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '600',
-    marginBottom: 4,
   },
   message: {
     fontSize: 12,
@@ -53,6 +62,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
+    paddingHorizontal: 4,
   },
 });

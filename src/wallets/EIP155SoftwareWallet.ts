@@ -105,13 +105,21 @@ export class EIP155SoftwareWallet implements ISoftwareWallet {
     return await this.wallet.signMessage(messageStr);
   }
 
-  public async signRawMessage(message: string): Promise<string> {
-    const rawBytes = utils.arrayify(message);
+  public async signHash(message: string): Promise<string> {
+    const digest = utils.arrayify(message);
     if (!this.wallet) {
       throw new WalletError(WalletErrorType.WALLET_NOT_SET, "Wallet not set");
     }
-    const digest = utils.keccak256(rawBytes);
-    return utils.joinSignature(this.wallet._signingKey().signDigest(digest));
+    if (digest.byteLength !== 0x20) {
+      throw new WalletError(WalletErrorType.SIGNING_FAILED, "Invalid input length");
+    }
+    const sig = utils.joinSignature(this.wallet._signingKey().signDigest(digest));
+    const v = parseInt(sig.slice(-2), 16);
+    if (v !== 27 && v !== 28) {
+      throw new WalletError(WalletErrorType.SIGNING_FAILED, "Invalid signature recovery value");
+    }
+
+    return `${sig.slice(0, -2)}${(v - 27).toString(16).padStart(2, "0")}`;
   }
 
   public async signTransaction(transaction: any): Promise<string> {

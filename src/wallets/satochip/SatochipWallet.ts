@@ -25,7 +25,6 @@ import {
   parseDERSignature,
   recoverVValue,
 } from '@/utils/SignatureUtils';
-import { keccak256 } from "@ethersproject/keccak256";
 
 export class SatochipWallet implements ISatochipWallet {
   public readonly type = WalletType.SATOCHIP;
@@ -154,7 +153,7 @@ export class SatochipWallet implements ISatochipWallet {
     }
   }
 
-  public async signRawMsg(
+  public async signDigest(
     message: string,
     card: SatochipCard,
     pin: string,
@@ -162,9 +161,13 @@ export class SatochipWallet implements ISatochipWallet {
     chainId: number,
   ): Promise<string> {
     try {
-      const msg = ethers.utils.arrayify(message);
-      const hashHexString = keccak256(msg)
-      const hashBytes = Buffer.from(hashHexString.slice(2), 'hex');
+      if (!ethers.utils.isHexString(message, 32)) {
+        throw new WalletError(
+          WalletErrorType.SIGNING_FAILED,
+          'Hash must be a 32-byte hex string',
+        );
+      }
+      const hashBytes = Buffer.from(message.slice(2), 'hex');
 
       const derSig = await signWithSatochip(
         card,
@@ -177,13 +180,13 @@ export class SatochipWallet implements ISatochipWallet {
       const { r, s } = parseDERSignature(derSig);
 
       const v = await recoverVValue(
-        hashHexString,
+        message,
         r,
         s,
         address,
         chainId,
         1,
-        true,
+        false,
       );
 
       return r + s.slice(2) + v.toString(16).padStart(2, '0');

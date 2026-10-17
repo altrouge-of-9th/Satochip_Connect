@@ -259,6 +259,11 @@ export function getEIP155AddressesFromParams(params: any): string {
         const address = params.request.params[1];
         return validateAndNormalizeAddress(address);
       }
+      
+      case "near_signHash": {
+        const address = params.request.params[0];
+        return validateAndNormalizeAddress(address);
+      }
 
       case "eth_signTypedData":
       case "eth_signTypedData_V3":
