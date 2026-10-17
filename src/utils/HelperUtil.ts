@@ -3,6 +3,7 @@ import {ProposalTypes} from '@walletconnect/types';
 import {PresetsUtil} from './PresetsUtil';
 import {WalletError, WalletErrorType} from '@/types/WalletTypes';
 import TransactionService from '@/services/TransactionService.ts';
+import {getTransactionType} from '@/utils/EIP155Utils';
 
 /**
  * Truncates string (in the middle) via given length value
@@ -127,6 +128,23 @@ export async function validateTransaction(
     );
   }
   const normalizedFrom = validateAndNormalizeAddress(transaction.from);
+  const transactionType =
+    transaction.type === undefined &&
+    transaction.gasPrice === undefined &&
+    transaction.maxFeePerGas === undefined &&
+    transaction.maxPriorityFeePerGas === undefined
+      ? undefined
+      : getTransactionType(transaction);
+  if (
+    (transactionType === 0 &&
+      (transaction.maxFeePerGas || transaction.maxPriorityFeePerGas)) ||
+    (transactionType === 2 && transaction.gasPrice)
+  ) {
+    throw new WalletError(
+      WalletErrorType.INVALID_GAS_FEE,
+      'Transaction type does not match its gas fee fields',
+    );
+  }
 
   // Validate 'to' address (optional for contract creation)
   let normalizedTo = transaction.to;
@@ -142,7 +160,7 @@ export async function validateTransaction(
   }
 
   // validate gasLimit
-  let gas = transaction.gas;
+  let gas = transaction.gas ?? transaction.gasLimit;
   if (!gas){
     gas = await TransactionService.estimateGas(
       normalizedFrom,
@@ -154,10 +172,27 @@ export async function validateTransaction(
     console.log(`[HelperUtil] validateTransaction estimated missing gas: ${gas}`);
   }
 
+  const normalizedTransaction = {
+    ...transaction,
+    from: normalizedFrom,
+    to: normalizedTo,
+    chainId,
+    nonce: nonce,
+    gasLimit: gas,
+    ...(transactionType === undefined ? {} : {type: transactionType}),
+  };
+  delete normalizedTransaction.gas;
+
   // validate gas fee (legacy or EIP-1559
   if (!transaction.gasPrice && !(transaction.maxFeePerGas && transaction.maxPriorityFeePerGas)) {
     const gasPriceResult = await TransactionService.fetchGasPrice(chainId);
     if (gasPriceResult.maxFeePerGas && gasPriceResult.maxPriorityFeePerGas) {
+      if (transactionType === 0) {
+        throw new WalletError(
+          WalletErrorType.INVALID_GAS_FEE,
+          'Legacy transaction requires gasPrice',
+        );
+      }
       let maxFeePerGas = transaction.maxFeePerGas;
       if (!maxFeePerGas){
         maxFeePerGas = gasPriceResult.maxFeePerGas;
@@ -169,24 +204,29 @@ export async function validateTransaction(
         console.log(`[HelperUtil] validateTransaction estimated missing maxPriorityFeePerGas: ${maxPriorityFeePerGas}`);
       }
       return {
-        ...transaction,
-        from: normalizedFrom,
-        to: normalizedTo,
-        nonce: nonce,
-        gas: gas,
+        ...normalizedTransaction,
+        type: 2,
         maxFeePerGas: maxFeePerGas,
         maxPriorityFeePerGas: maxPriorityFeePerGas
       };
     } else if (gasPriceResult.legacy) {
+      if (transactionType === 2) {
+        throw new WalletError(
+          WalletErrorType.INVALID_GAS_FEE,
+          'EIP-1559 transaction requires maxFeePerGas and maxPriorityFeePerGas',
+        );
+      }
       console.log(`[HelperUtil] validateTransaction estimated missing gasPrice: ${gasPriceResult.legacy}`);
       return {
-        ...transaction,
-        from: normalizedFrom,
-        to: normalizedTo,
-        nonce: nonce,
-        gas: gas,
+        ...normalizedTransaction,
+        type: 0,
         gasPrice: gasPriceResult.legacy,
       }
+    } else if (transactionType === 0) {
+      throw new WalletError(
+        WalletErrorType.INVALID_GAS_FEE,
+        'Legacy transaction requires gasPrice',
+      );
     }else {
       throw new WalletError(
         WalletErrorType.INVALID_GAS_FEE,
@@ -196,13 +236,7 @@ export async function validateTransaction(
   }
 
   // Return transaction with nonce
-  return {
-    ...transaction,
-    from: normalizedFrom,
-    to: normalizedTo,
-    nonce: nonce,
-    gas: gas,
-  };
+  return normalizedTransaction;
 }
 
 /**

@@ -199,7 +199,7 @@ class TransactionService {
 
   /**
    * Fetch gas prices from blockchain
-   * Tries EIP-1559 first (getFeeData), falls back to legacy (getGasPrice)
+   * Fetches the EIP-1559 priority fee from RPC, then falls back to legacy gasPrice
    *
    * @param chainId - Chain ID
    * @returns Gas price info (legacy OR EIP-1559)
@@ -233,16 +233,34 @@ class TransactionService {
         try {
           const feeDataPromise = provider.getFeeData();
           const feeData = await Promise.race([feeDataPromise, timeoutPromise]);
+          const priorityFeePromise = provider.send(
+            'eth_maxPriorityFeePerGas',
+            [],
+          );
+          const priorityFee = ethers.BigNumber.from(
+            await Promise.race([priorityFeePromise, timeoutPromise]),
+          );
 
           // Check if EIP-1559 is supported (has maxFeePerGas)
-          if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+          if (feeData.maxFeePerGas) {
+            const latestBlockPromise = provider.getBlock('latest');
+            const latestBlock = await Promise.race([
+              latestBlockPromise,
+              timeoutPromise,
+            ]);
+            const maxFeePerGas = latestBlock.baseFeePerGas
+              ? latestBlock.baseFeePerGas.mul(2).add(priorityFee)
+              : feeData.maxFeePerGas.gt(priorityFee)
+                ? feeData.maxFeePerGas
+                : priorityFee;
+
             recordRpcSuccess(chainId, rpcUrl);
             console.log(
-              `[TransactionService] EIP-1559 gas: maxFee=${feeData.maxFeePerGas.toString()}, maxPriority=${feeData.maxPriorityFeePerGas.toString()}`
+              `[TransactionService] EIP-1559 gas: maxFee=${maxFeePerGas.toString()}, maxPriority=${priorityFee.toString()}`
             );
             return {
-              maxFeePerGas: feeData.maxFeePerGas.toHexString(),
-              maxPriorityFeePerGas: feeData.maxPriorityFeePerGas.toHexString(),
+              maxFeePerGas: maxFeePerGas.toHexString(),
+              maxPriorityFeePerGas: priorityFee.toHexString(),
             };
           }
 

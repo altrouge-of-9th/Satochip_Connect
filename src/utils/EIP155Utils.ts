@@ -18,7 +18,7 @@ export interface TransactionRequest {
   value?: string;
   data?: string;
   nonce?: string;
-  type?: number;
+  type?: number | string;
 }
 
 /**
@@ -319,8 +319,16 @@ export function createSignedTransaction(
  * @returns Transaction type (0 = legacy, 2 = EIP-1559)
  */
 export function getTransactionType(tx: TransactionRequest): number {
+  if (tx.type !== undefined) {
+    const type = typeof tx.type === 'number' ? tx.type : Number(tx.type);
+    if (!Number.isInteger(type) || (type !== 0 && type !== 2)) {
+      throw new Error(`Unsupported transaction type: ${tx.type}`);
+    }
+    return type;
+  }
+
   if (
-    tx.maxFeePerGas !== undefined &&
+    tx.maxFeePerGas !== undefined ||
     tx.maxPriorityFeePerGas !== undefined
   ) {
     return 2; // EIP-1559
